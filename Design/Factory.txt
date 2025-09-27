@@ -1,0 +1,83 @@
+
+interface TaskCreator {
+    Task createTask(String description, String startTimeStr, String endTimeStr, String priorityStr)
+            throws DateTimeParseException, IllegalArgumentException;
+}
+
+
+class GenericTaskCreator implements TaskCreator {
+    @Override
+    public Task createTask(String description, String startTimeStr, String endTimeStr, String priorityStr)
+            throws DateTimeParseException, IllegalArgumentException {
+        return TaskFactory.createTask(description, startTimeStr, endTimeStr, priorityStr);
+    }
+}
+
+
+class EVATaskCreator implements TaskCreator {
+    @Override
+    public Task createTask(String description, String startTimeStr, String endTimeStr, String priorityStr)
+            throws DateTimeParseException, IllegalArgumentException {
+        
+        String actualPriorityStr = (priorityStr == null || priorityStr.trim().isEmpty()) ? "HIGH" : priorityStr;
+     
+        String actualDescription = description.startsWith("EVA: ") ? description : "EVA: " + description;
+        return TaskFactory.createTask(actualDescription, startTimeStr, endTimeStr, actualPriorityStr);
+    }
+}
+
+
+class ResearchTaskCreator implements TaskCreator {
+    @Override
+    public Task createTask(String description, String startTimeStr, String endTimeStr, String priorityStr)
+            throws DateTimeParseException, IllegalArgumentException {
+        
+        String actualPriorityStr = (priorityStr == null || priorityStr.trim().isEmpty()) ? "MEDIUM" : priorityStr;
+        String actualDescription = description.startsWith("Research: ") ? description : "Research: " + description;
+        return TaskFactory.createTask(actualDescription, startTimeStr, endTimeStr, actualPriorityStr);
+    }
+}
+
+In AstronautScheduleApp
+
+           
+            System.out.println("1. Add Task (Generic)");
+            System.out.println("1a. Add Specialized Task"); 
+        
+            case "1a":
+                addSpecializedTask(scanner, scheduleManager);
+                break;
+
+
+    private static void addSpecializedTask(Scanner scanner, ScheduleManager scheduleManager)
+            throws DateTimeParseException, IllegalArgumentException, TaskConflictException {
+        System.out.println("\n--- Choose Task Type ---");
+        System.out.println("1. Generic Task");
+        System.out.println("2. EVA Task");
+        System.out.println("3. Research Task");
+        System.out.print("Enter your choice: ");
+        String taskTypeChoice = scanner.nextLine();
+
+        TaskCreator creator;
+        switch (taskTypeChoice) {
+            case "1": creator = new GenericTaskCreator(); break;
+            case "2": creator = new EVATaskCreator(); break;
+            case "3": creator = new ResearchTaskCreator(); break;
+            default:
+                System.err.println("Invalid task type. Using Generic Task Creator.");
+                creator = new GenericTaskCreator();
+        }
+
+        System.out.print("Enter task description: ");
+        String description = scanner.nextLine();
+        System.out.print("Enter start time (HH:mm): ");
+        String startTimeStr = scanner.nextLine();
+        System.out.print("Enter end time (HH:mm): ");
+        String endTimeStr = scanner.nextLine();
+        System.out.print("Enter priority (LOW, MEDIUM, HIGH, leave blank for default): ");
+        String priorityStr = scanner.nextLine(); 
+
+        Task newTask = creator.createTask(description, startTimeStr, endTimeStr, priorityStr);
+        scheduleManager.addTask(newTask);
+        System.out.println("Specialized task added successfully. No conflicts.");
+    }

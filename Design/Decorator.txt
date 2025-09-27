@@ -1,0 +1,102 @@
+
+interface TaskDisplay {
+    String display();
+}
+
+class BasicTaskDisplay implements TaskDisplay {
+    private Task task;
+
+    public BasicTaskDisplay(Task task) {
+        this.task = task;
+    }
+
+    @Override
+    public String display() {
+        return task.toString();
+    }
+}
+
+
+abstract class TaskDisplayDecorator implements TaskDisplay {
+    protected TaskDisplay decoratedTaskDisplay;
+
+    public TaskDisplayDecorator(TaskDisplay decoratedTaskDisplay) {
+        this.decoratedTaskDisplay = decoratedTaskDisplay;
+    }
+
+    @Override
+    public String display() {
+        return decoratedTaskDisplay.display();
+    }
+}
+class PriorityHighlightDecorator extends TaskDisplayDecorator {
+    public PriorityHighlightDecorator(TaskDisplay decoratedTaskDisplay) {
+        super(decoratedTaskDisplay);
+    }
+
+    @Override
+    public String display() {
+        String basicDisplay = super.display();
+       
+
+        if (decoratedTaskDisplay instanceof BasicTaskDisplay) {
+            Task task = ((BasicTaskDisplay) decoratedTaskDisplay).task;
+            if (task.getPriority() == Priority.HIGH) {
+                return "!!! HIGH PRIORITY !!! " + basicDisplay;
+            } else if (task.getPriority() == Priority.MEDIUM) {
+                return "! MEDIUM PRIORITY ! " + basicDisplay;
+            }
+        }
+        return basicDisplay; 
+    }
+}
+
+
+class DurationDisplayDecorator extends TaskDisplayDecorator {
+    public DurationDisplayDecorator(TaskDisplay decoratedTaskDisplay) {
+        super(decoratedTaskDisplay);
+    }
+
+    @Override
+    public String display() {
+        String basicDisplay = super.display();
+        if (decoratedTaskDisplay instanceof BasicTaskDisplay) {
+            Task task = ((BasicTaskDisplay) decoratedTaskDisplay).task;
+            long minutes = java.time.Duration.between(task.getStartTime(), task.getEndTime()).toMinutes();
+            return basicDisplay + String.format(" (Duration: %d min)", minutes);
+        }
+        return basicDisplay;
+
+    }
+}
+
+In AstronautScheduleApp
+
+    private static void viewAllTasks(ScheduleManager scheduleManager) {
+        List<Task> tasks = scheduleManager.viewAllTasks();
+        if (tasks.isEmpty()) {
+            System.out.println("No tasks scheduled for the day.");
+        } else {
+            System.out.println("\n--- All Scheduled Tasks (Enhanced Display) ---");
+            for (int i = 0; i < tasks.size(); i++) {
+                Task currentTask = tasks.get(i);
+                TaskDisplay display = new BasicTaskDisplay(currentTask);
+                display = new PriorityHighlightDecorator(display); // Add priority highlight
+                display = new DurationDisplayDecorator(display);   // Add duration
+                System.out.println((i + 1) + ". " + display.display());
+            }
+        }
+    }
+
+    private static void viewTasksByPriority(Scanner scanner, ScheduleManager scheduleManager) {
+        
+            System.out.println("\n--- Tasks with Priority " + priority.name() + " (Enhanced Display) ---");
+            for (int i = 0; i < tasks.size(); i++) {
+                Task currentTask = tasks.get(i);
+                TaskDisplay display = new BasicTaskDisplay(currentTask);
+                display = new PriorityHighlightDecorator(display); 
+                display = new DurationDisplayDecorator(display);   
+                System.out.println((i + 1) + ". " + display.display());
+            }
+      
+    }

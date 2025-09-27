@@ -1,0 +1,211 @@
+
+class Task {
+    private String description;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private Priority priority;
+    private boolean completed;
+    
+    private String location;
+    private List<String> requiredEquipment;
+    private Task(TaskBuilder builder) {
+        if (builder.startTime.isAfter(builder.endTime)) {
+            throw new IllegalArgumentException("Start time cannot be after end time.");
+        }
+        this.description = builder.description;
+        this.startTime = builder.startTime;
+        this.endTime = builder.endTime;
+        this.priority = builder.priority;
+        this.completed = false;
+        this.location = builder.location;
+        this.requiredEquipment = new ArrayList<>(builder.requiredEquipment); // Defensive copy
+    }
+
+   
+    public Task(String description, LocalTime startTime, LocalTime endTime, Priority priority) {
+        this(new TaskBuilder() 
+                .description(description)
+                .startTime(startTime)
+                .endTime(endTime)
+                .priority(priority));
+    }
+
+  
+    public String getLocation() { return location; }
+    public List<String> getRequiredEquipment() { return Collections.unmodifiableList(requiredEquipment); }
+
+
+    @Override
+    public String toString() {
+        String status = completed ? " [COMPLETED]" : "";
+        String details = "";
+        if (location != null && !location.isEmpty()) {
+            details += ", Location: " + location;
+        }
+        if (requiredEquipment != null && !requiredEquipment.isEmpty()) {
+            details += ", Equipment: " + String.join(", ", requiredEquipment);
+        }
+        return String.format("%s - %s: %s [%s]%s%s",
+                startTime.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")),
+                endTime.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")),
+                description, priority, status, details);
+    }
+
+   
+    public void updateTask(String description, LocalTime startTime, LocalTime endTime, Priority priority,
+                           String location, List<String> requiredEquipment) {
+        if (startTime.isAfter(endTime)) {
+            throw new IllegalArgumentException("Start time cannot be after end time.");
+        }
+        this.description = description;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.priority = priority;
+        this.location = location;
+        this.requiredEquipment = new ArrayList<>(requiredEquipment);
+    }
+}
+
+
+class TaskBuilder {
+    private String description;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private Priority priority = Priority.MEDIUM; // Default priority
+    private String location = "ISS"; // Default location
+    private List<String> requiredEquipment = new ArrayList<>();
+
+    public TaskBuilder description(String description) {
+        this.description = description;
+        return this;
+    }
+
+    public TaskBuilder startTime(LocalTime startTime) {
+        this.startTime = startTime;
+        return this;
+    }
+
+    public TaskBuilder endTime(LocalTime endTime) {
+        this.endTime = endTime;
+        return this;
+    }
+
+    public TaskBuilder priority(Priority priority) {
+        this.priority = priority;
+        return this;
+    }
+
+    public TaskBuilder location(String location) {
+        this.location = location;
+        return this;
+    }
+
+    public TaskBuilder addRequiredEquipment(String equipment) {
+        this.requiredEquipment.add(equipment);
+        return this;
+    }
+
+    public Task build() {
+        if (description == null || startTime == null || endTime == null) {
+            throw new IllegalStateException("Description, start time, and end time are required for a task.");
+        }
+        return new Task(this); 
+    }
+}
+
+In TaskFactory 
+
+class TaskFactory {
+    public static Task createTask(String description, String startTimeStr, String endTimeStr, String priorityStr)
+            throws DateTimeParseException, IllegalArgumentException {
+        LocalTime startTime = LocalTime.parse(startTimeStr, java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+        LocalTime endTime = LocalTime.parse(endTimeStr, java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+        Priority priority = Priority.fromString(priorityStr);
+
+        return new TaskBuilder() 
+                .description(description)
+                .startTime(startTime)
+                .endTime(endTime)
+                .priority(priority)
+                .build(); 
+    }
+
+    
+    public static Task createTaskWithDetails(String description, String startTimeStr, String endTimeStr,
+                                             String priorityStr, String location, List<String> equipmentList)
+            throws DateTimeParseException, IllegalArgumentException {
+        LocalTime startTime = LocalTime.parse(startTimeStr, java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+        LocalTime endTime = LocalTime.parse(endTimeStr, java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+        Priority priority = Priority.fromString(priorityStr);
+
+        TaskBuilder builder = new TaskBuilder()
+                .description(description)
+                .startTime(startTime)
+                .endTime(endTime)
+                .priority(priority)
+                .location(location);
+        for(String equipment : equipmentList) {
+            builder.addRequiredEquipment(equipment);
+        }
+        return builder.build();
+    }
+}
+
+In AstronautScheduleApp
+
+            
+            System.out.println("1. Add Task (Generic)"); 
+            System.out.println("1b. Add Detailed Task (using Builder)"); 
+            
+            case "1b": 
+                addDetailedTask(scanner, scheduleManager);
+                break;
+
+
+    private static void addDetailedTask(Scanner scanner, ScheduleManager scheduleManager)
+            throws DateTimeParseException, IllegalArgumentException, TaskConflictException {
+        System.out.print("Enter task description: ");
+        String description = scanner.nextLine();
+        System.out.print("Enter start time (HH:mm): ");
+        String startTimeStr = scanner.nextLine();
+        System.out.print("Enter end time (HH:mm): ");
+        String endTimeStr = scanner.nextLine();
+        System.out.print("Enter priority (LOW, MEDIUM, HIGH): ");
+        String priorityStr = scanner.nextLine();
+        System.out.print("Enter task location (e.g., 'Cupola', 'Lab Module', 'External', default: ISS): ");
+        String location = scanner.nextLine();
+        if (location.isEmpty()) location = "ISS"; 
+
+        List<String> equipment = new ArrayList<>();
+        System.out.println("Enter required equipment (type 'done' when finished):");
+        while (true) {
+            System.out.print("Equipment item: ");
+            String item = scanner.nextLine();
+            if (item.equalsIgnoreCase("done")) {
+                break;
+            }
+            if (!item.isEmpty()) {
+                equipment.add(item);
+            }
+        }
+
+        Task newTask = new TaskBuilder()
+                .description(description)
+                .startTime(LocalTime.parse(startTimeStr, java.time.format.DateTimeFormatter.ofPattern("HH:mm")))
+                .endTime(LocalTime.parse(endTimeStr, java.time.format.DateTimeFormatter.ofPattern("HH:mm")))
+                .priority(Priority.fromString(priorityStr))
+                .location(location)
+                .addRequiredEquipment(equipment.toArray(new String[0])) 
+                .build();
+
+        scheduleManager.addTask(newTask);
+        System.out.println("Detailed task added successfully. No conflicts.");
+    }
+
+   
+    public TaskBuilder addRequiredEquipment(String... equipmentItems) {
+        for (String item : equipmentItems) {
+            this.requiredEquipment.add(item);
+        }
+        return this;
+    }
