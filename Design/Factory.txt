@@ -1,4 +1,18 @@
+Demonstration:
+The user can now select how they want to view their tasks. Choosing "3a" will present options for sorting by time, priority, or completion status. The ScheduleManager then uses the chosen strategy to sort the tasks, demonstrating interchangeable algorithms at runtime.
+Creational Design Patterns
 
+3. Factory Method Pattern Use Case: Specialized Task Creation
+
+Scenario: Besides general tasks, astronauts might have specific types of tasks like "EVA (Extravehicular Activity)" or "Research Experiment" which, while still tasks, might have specific default properties or require specific initializations that a generic TaskFactory might not handle elegantly.
+
+Implementation:
+
+    Create an interface for a generic TaskCreator.
+
+    Implement concrete TaskCreator classes for "Generic Task," "EVATask," and "ResearchTask."
+
+    These creators will use the existing Task class but might provide different default priorities or descriptions.
 interface TaskCreator {
     Task createTask(String description, String startTimeStr, String endTimeStr, String priorityStr)
             throws DateTimeParseException, IllegalArgumentException;
@@ -80,4 +94,5 @@ In AstronautScheduleApp
         Task newTask = creator.createTask(description, startTimeStr, endTimeStr, priorityStr);
         scheduleManager.addTask(newTask);
         System.out.println("Specialized task added successfully. No conflicts.");
+
     }
