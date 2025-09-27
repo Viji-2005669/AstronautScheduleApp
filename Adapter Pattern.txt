@@ -1,0 +1,10 @@
+Demonstration:
+Now, when viewing tasks, high-priority tasks will have "!!! HIGH PRIORITY !!!" prefixed, medium priority tasks will have "! MEDIUM PRIORITY !", and all tasks will show their duration in minutes. This functionality is added without altering the Task class itself, showcasing the Decorator pattern's flexibility for extending object behavior.
+
+6. Adapter Pattern Use Case: Integrating a Legacy Time Logger
+
+Scenario: We have a legacy system component (e.g., an old "Mission Control Time Logger") that expects task data in a specific, outdated format (e.g., just description and a single timestamp string) and needs to be integrated with our new Task objects. We can use an Adapter to make our Task objects compatible with the legacy logger.
+
+Implementation:
+
+    Define a LegacyTimeLogger
