@@ -1,0 +1,92 @@
+
+interface TaskSortingStrategy {
+    List<Task> sort(List<Task> tasks);
+}
+
+
+class SortByStartTime implements TaskSortingStrategy {
+    @Override
+    public List<Task> sort(List<Task> tasks) {
+        List<Task> sortedTasks = new ArrayList<>(tasks); 
+        Collections.sort(sortedTasks, Comparator.comparing(Task::getStartTime));
+        return sortedTasks;
+    }
+}
+
+
+class SortByPriority implements TaskSortingStrategy {
+    @Override
+    public List<Task> sort(List<Task> tasks) {
+        List<Task> sortedTasks = new ArrayList<>(tasks);
+        Collections.sort(sortedTasks, Comparator
+                .comparing(Task::getPriority)
+                .thenComparing(Task::getStartTime)); 
+        return sortedTasks;
+    }
+}
+
+
+class SortByCompletionStatus implements TaskSortingStrategy {
+    @Override
+    public List<Task> sort(List<Task> tasks) {
+        List<Task> sortedTasks = new ArrayList<>(tasks); 
+        Collections.sort(sortedTasks, (t1, t2) -> {
+            if (t1.isCompleted() == t2.isCompleted()) {
+                return t1.getStartTime().compareTo(t2.getStartTime()); 
+            }
+            return t1.isCompleted() ? 1 : -1;
+        });
+        return sortedTasks;
+    }
+}
+
+In ScheduleManager
+
+    public List<Task> viewTasks(TaskSortingStrategy strategy) {
+        if (tasks.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return strategy.sort(new ArrayList<>(tasks));
+    }
+
+In AstronautScheduleApp 
+
+            System.out.println("3. View All Tasks (Default Sort)");
+            System.out.println("3a. View All Tasks (Custom Sort)"); 
+            case "3a": 
+                viewTasksWithCustomSort(scanner, scheduleManager);
+                break;
+    private static void viewTasksWithCustomSort(Scanner scanner, ScheduleManager scheduleManager) {
+        System.out.println("\n--- Choose Sorting Strategy ---");
+        System.out.println("1. By Start Time");
+        System.out.println("2. By Priority");
+        System.out.println("3. By Completion Status");
+        System.out.print("Enter your choice: ");
+        String sortChoice = scanner.nextLine();
+
+        TaskSortingStrategy strategy;
+        switch (sortChoice) {
+            case "1":
+                strategy = new SortByStartTime();
+                break;
+            case "2":
+                strategy = new SortByPriority();
+                break;
+            case "3":
+                strategy = new SortByCompletionStatus();
+                break;
+            default:
+                System.err.println("Invalid sorting choice. Using default (Sort by Start Time).");
+                strategy = new SortByStartTime();
+        }
+
+        List<Task> tasks = scheduleManager.viewTasks(strategy);
+        if (tasks.isEmpty()) {
+            System.out.println("No tasks scheduled for the day.");
+        } else {
+            System.out.println("\n--- All Scheduled Tasks (Sorted) ---");
+            for (int i = 0; i < tasks.size(); i++) {
+                System.out.println((i + 1) + ". " + tasks.get(i));
+            }
+        }
+    }
