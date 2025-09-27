@@ -1,4 +1,18 @@
+Demonstration:
+When adding a "Detailed Task," the user is prompted for location and multiple equipment items. The TaskBuilder allows for setting these optional parameters step-by-step, making the creation code much cleaner and more readable than a massive constructor. The final build() call then creates the Task object.
+Structural Design Patterns
 
+5. Decorator Pattern Use Case: Enhanced Task Display
+
+Scenario: We want to add extra formatting or information to the Task's toString() method dynamically, such as highlighting high-priority tasks with a special prefix or adding estimated duration, without changing the Task class itself.
+
+Implementation:
+
+    Create a TaskDisplay interface.
+
+    Implement a BasicTaskDisplay (our concrete component that simply calls Task.toString()).
+
+    Create decorator classes like PriorityHighlightDecorator and DurationDisplayDecorator that wrap a TaskDisplay and add functionality.
 interface TaskDisplay {
     String display();
 }
@@ -99,4 +113,5 @@ In AstronautScheduleApp
                 System.out.println((i + 1) + ". " + display.display());
             }
       
+
     }
