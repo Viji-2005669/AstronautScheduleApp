@@ -1,0 +1,112 @@
+This Java code implements an "Astronaut Daily Schedule" application, designed to help astronauts manage their daily tasks. It incorporates several software design patterns to ensure a robust, flexible, and maintainable system.
+Detailed Code Description
+
+The application is structured around several classes, each with a specific responsibility:
+
+    AppLogger (Singleton for Logging):
+
+        Purpose: Provides a centralized, application-wide logging mechanism.
+
+        Details: It uses Java's java.util.logging framework. It's configured to log INFO level messages and above to the console and all levels (ALL) to a file named astronaut_schedule.log. The static block ensures the logger is initialized once when the class is loaded. It follows the Singleton pattern implicitly for the Logger instance it manages.
+
+        Design Pattern: Singleton (for the Logger instance itself within AppLogger).
+
+    Task Class:
+
+        Purpose: Represents a single task in the astronaut's schedule.
+
+        Details:
+
+            Attributes: description (String), startTime (LocalTime), endTime (LocalTime), priority (Priority enum), completed (boolean).
+
+            Constructor: Validates that startTime is not after endTime.
+
+            Methods: Getters for all attributes, markAsCompleted(), updateTask() (for editing), overlapsWith() (logic for conflict detection), and toString() for formatted output.
+
+        Design Principle: Encapsulation.
+
+    Priority Enum:
+
+        Purpose: Defines the possible priority levels for a task (LOW, MEDIUM, HIGH).
+
+        Details: Includes a static fromString() method to convert a string representation to an enum value, making it easier to parse user input.
+
+    TaskFactory (Factory Method Pattern):
+
+        Purpose: Centralizes the creation of Task objects, abstracting away the parsing logic.
+
+        Details: The createTask() static method takes string inputs for time and priority, parses them, and then instantiates and returns a new Task object. This separates the object creation logic from the client code (the AstronautScheduleApp's addTask method).
+
+        Design Pattern: Factory Method (simplified as a static factory method).
+
+    TaskConflictObserver & TaskUpdateObserver (Observer Pattern Interfaces):
+
+        Purpose: Define interfaces for objects that want to be notified of specific events.
+
+        Details:
+
+            TaskConflictObserver: Has onTaskConflict(Task newTask, Task conflictingTask) method, called when a new task conflicts with an existing one.
+
+            TaskUpdateObserver: Has onTaskUpdate(Task updatedTask) method, called when a task is updated or marked as completed.
+
+        Design Pattern: Observer.
+
+    ScheduleManager (Singleton and Subject in Observer Pattern):
+
+        Purpose: Manages the collection of tasks, handles additions, removals, edits, and queries. It's the central hub for schedule operations.
+
+        Details:
+
+            Singleton: Ensures only one instance of ScheduleManager exists throughout the application, providing a global point of access to the schedule. The getInstance() method handles this.
+
+            Subject (Observable): Maintains lists of TaskConflictObserver and TaskUpdateObserver objects. It provides addConflictObserver() and addUpdateObserver() methods to allow observers to register.
+
+            Notification: notifyConflictObservers() and notifyUpdateObservers() methods iterate through their respective observer lists and call their notification methods.
+
+            Core Logic: addTask() (includes conflict checking and sorting), removeTask(), viewAllTasks(), viewTasksByPriority(), editTask() (robust conflict checking during edits), and markTaskAsCompleted().
+
+            Concurrency: The getInstance() method is synchronized to ensure thread safety during instance creation, though the tasks list itself is not thread-safe for modifications from multiple threads.
+
+        Design Patterns: Singleton, Observer (as the Subject/Observable).
+
+    TaskConflictException & TaskNotFoundException (Custom Exceptions):
+
+        Purpose: Provide specific, descriptive error handling for common business logic failures.
+
+        Details: Extend Exception and carry a message. This makes the error handling clearer and more robust than using generic exceptions.
+
+    ConsoleNotifier (Concrete Observer):
+
+        Purpose: Implements the TaskConflictObserver and TaskUpdateObserver interfaces to provide console feedback to the user when events occur.
+
+        Details: Prints alerts for conflicts and info messages for updates/completions to System.err and System.out respectively.
+
+        Design Pattern: Observer.
+
+    AstronautScheduleApp (Main Application Class):
+
+        Purpose: Contains the main method, which is the entry point of the application. It sets up the UI and orchestrates interactions.
+
+        Details:
+
+            Initializes ScheduleManager (Singleton) and ConsoleNotifier.
+
+            Registers the notifier as an observer with the scheduleManager.
+
+            Presents a text-based menu to the user in a while loop.
+
+            Uses a Scanner to read user input.
+
+            switch statement handles different menu choices, calling helper methods (addTask, removeTask, etc.).
+
+            Includes comprehensive try-catch blocks to handle various exceptions (DateTimeParseException, IllegalArgumentException, custom exceptions, and general Exception) gracefully, providing user-friendly error messages and logging.
+
+        Structure: Follows a typical console application structure.
+
+Design Patterns Used and Demonstrated:
+
+    Singleton: ScheduleManager ensures only one instance manages the schedule. AppLogger implicitly provides a singleton Logger instance.
+
+    Factory Method: TaskFactory centralizes the creation of Task objects, abstracting the parsing of input strings.
+
+    Observer: ScheduleManager is the subject, and ConsoleNotifier is an observer. When tasks conflict or are updated, the ScheduleManager notifies its registered observers.
