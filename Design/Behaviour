@@ -2,7 +2,6 @@ Use Cases Demonstrating Design Patterns
 
 Here are six creative use cases, each implemented with specific code modifications or additions to demonstrate your understanding of the design patterns.
 Behavioral Design Patterns
-
 1. Observer Pattern Use Case: Spacecraft System Alerts
 
 Scenario: In addition to the console, critical task conflicts should trigger an alert to a "Spacecraft Main Computer" (simulated by another observer) which might take automated actions (e.g., re-prioritize other systems, notify mission control).
