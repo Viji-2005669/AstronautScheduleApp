@@ -1,4 +1,17 @@
+Demonstration:
+The user can now choose to add a "Generic Task," "EVA Task," or "Research Task." When selecting "EVA Task," for example, the EVATaskCreator will ensure the description is prefixed with "EVA:" and the priority defaults to "HIGH" if not specified, demonstrating the Factory Method pattern's ability to encapsulate specialized object creation.
 
+4. Builder Pattern Use Case: Complex Task Configuration
+
+Scenario: Imagine tasks could have many optional parameters, like location, requiredEquipment, assignedCrewMember, etc. Directly using the Task constructor would become unwieldy. The Builder pattern allows for step-by-step construction of complex task objects.
+
+Implementation:
+
+    Create a TaskBuilder class with methods for setting each attribute.
+
+    The Task class's constructor will then take a TaskBuilder object.
+
+    For simplicity, we'll add location and requiredEquipment to the task.
 class Task {
     private String description;
     private LocalTime startTime;
@@ -208,4 +221,5 @@ In AstronautScheduleApp
             this.requiredEquipment.add(item);
         }
         return this;
+
     }
