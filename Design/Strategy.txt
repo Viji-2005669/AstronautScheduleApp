@@ -1,4 +1,17 @@
+Demonstration
+When a task conflict occurs, both ConsoleNotifier and SpacecraftMainComputer will be notified. The console will show the user error, and the log file will contain the critical alert from the SpacecraftMainComputer, simulating a separate system reacting to the conflict.
 
+2. Strategy Pattern Use Case Dynamic Task Sorting
+
+Scenario Astronauts might want to view their tasks sorted by different criteria (e.g., by start time, by priority level, or by completion status). Instead of hardcoding the sorting logic, we can allow them to choose a sorting strategy.
+
+Implementation
+
+    Define a TaskSorter interface.
+
+    Create concrete strategy classes for different sorting methods (e.g., SortByTime, SortByPriority).
+
+    Modify ScheduleManager to accept a TaskSorter strategy when viewing tasks.
 interface TaskSortingStrategy {
     List<Task> sort(List<Task> tasks);
 }
@@ -89,4 +102,5 @@ In AstronautScheduleApp
                 System.out.println((i + 1) + ". " + tasks.get(i));
             }
         }
+
     }
