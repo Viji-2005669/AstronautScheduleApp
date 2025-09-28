@@ -10,23 +10,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.IOException;
 import java.util.Scanner;
-
-// --- 1. Logging Mechanism ---
 class AppLogger {
     private static final Logger logger = Logger.getLogger(AppLogger.class.getName());
-
     static {
-        logger.setLevel(Level.INFO); // Default logging level
-
-        // Console Handler
+        logger.setLevel(Level.INFO); 
         ConsoleHandler consoleHandler = new ConsoleHandler();
         consoleHandler.setLevel(Level.INFO);
         logger.addHandler(consoleHandler);
-
-        // File Handler
         try {
-            FileHandler fileHandler = new FileHandler("astronaut_schedule.log", true); // append mode
-            fileHandler.setLevel(Level.ALL); // Log all levels to file
+            FileHandler fileHandler = new FileHandler("astronaut_schedule.log", true); 
+            fileHandler.setLevel(Level.ALL); 
             logger.addHandler(fileHandler);
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to set up file logger.", e);
@@ -45,7 +38,6 @@ class Task {
     private LocalTime endTime;
     private Priority priority;
     private boolean completed;
-
     public Task(String description, LocalTime startTime, LocalTime endTime, Priority priority) {
         if (startTime.isAfter(endTime)) {
             throw new IllegalArgumentException("Start time cannot be after end time.");
@@ -90,11 +82,7 @@ class Task {
         this.endTime = endTime;
         this.priority = priority;
     }
-
-    // Checks for overlap
     public boolean overlapsWith(Task other) {
-        // An overlap occurs if:
-        // (start1 < end2) AND (end1 > start2)
         return this.startTime.isBefore(other.endTime) && this.endTime.isAfter(other.startTime);
     }
 
@@ -183,7 +171,6 @@ class ScheduleManager {
     }
 
     public void addTask(Task newTask) throws TaskConflictException {
-        // Validate for overlaps
         for (Task existingTask : tasks) {
             if (newTask.overlapsWith(existingTask)) {
                 notifyConflictObservers(newTask, existingTask);
@@ -194,7 +181,7 @@ class ScheduleManager {
         }
 
         tasks.add(newTask);
-        Collections.sort(tasks, Comparator.comparing(Task::getStartTime)); // Keep sorted
+        Collections.sort(tasks, Comparator.comparing(Task::getStartTime)); 
         logger.info(String.format("Task added: %s", newTask.getDescription()));
     }
 
@@ -211,7 +198,6 @@ class ScheduleManager {
         if (tasks.isEmpty()) {
             return Collections.emptyList();
         }
-        // Return a defensive copy to prevent external modification
         return new ArrayList<>(tasks);
     }
 
@@ -222,12 +208,9 @@ class ScheduleManager {
                 filteredTasks.add(task);
             }
         }
-        // Sort the filtered tasks as well
         Collections.sort(filteredTasks, Comparator.comparing(Task::getStartTime));
         return filteredTasks;
     }
-
-    // Optional: Edit an existing task
     public void editTask(String oldDescription, String newDescription, String startTimeStr, String endTimeStr, String priorityStr)
             throws TaskNotFoundException, DateTimeParseException, IllegalArgumentException, TaskConflictException {
         Task taskToEdit = null;
@@ -244,15 +227,10 @@ class ScheduleManager {
             logger.warning(String.format("Attempted to edit non-existent task: %s", oldDescription));
             throw new TaskNotFoundException("Task to edit not found.");
         }
-
-        // Create a temporary task to check for conflicts without altering the original yet
         LocalTime newStartTime = LocalTime.parse(startTimeStr, java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
         LocalTime newEndTime = LocalTime.parse(endTimeStr, java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
         Priority newPriority = Priority.fromString(priorityStr);
         Task tempTask = new Task(newDescription, newStartTime, newEndTime, newPriority);
-
-
-        // Validate for overlaps with other tasks (excluding itself)
         for (int i = 0; i < tasks.size(); i++) {
             if (i != index && tempTask.overlapsWith(tasks.get(i))) {
                 notifyConflictObservers(tempTask, tasks.get(i));
@@ -263,13 +241,10 @@ class ScheduleManager {
         }
 
         taskToEdit.updateTask(newDescription, newStartTime, newEndTime, newPriority);
-        Collections.sort(tasks, Comparator.comparing(Task::getStartTime)); // Re-sort after potential time change
+        Collections.sort(tasks, Comparator.comparing(Task::getStartTime)); 
         notifyUpdateObservers(taskToEdit);
         logger.info(String.format("Task edited: %s -> %s", oldDescription, newDescription));
     }
-
-
-    // Optional: Mark tasks as completed
     public void markTaskAsCompleted(String description) throws TaskNotFoundException {
         Task taskToComplete = null;
         for (Task task : tasks) {
@@ -288,8 +263,6 @@ class ScheduleManager {
         logger.info(String.format("Task marked as completed: %s", description));
     }
 }
-
-// --- Custom Exceptions ---
 class TaskConflictException extends Exception {
     public TaskConflictException(String message) {
         super(message);
@@ -301,8 +274,6 @@ class TaskNotFoundException extends Exception {
         super(message);
     }
 }
-
-// --- Console UI and Observer Implementations ---
 class ConsoleNotifier implements TaskConflictObserver, TaskUpdateObserver {
     @Override
     public void onTaskConflict(Task newTask, Task conflictingTask) {
@@ -335,8 +306,8 @@ public class AstronautScheduleApp {
             System.out.println("2. Remove Task");
             System.out.println("3. View All Tasks");
             System.out.println("4. View Tasks by Priority");
-            System.out.println("5. Edit Task"); // Optional
-            System.out.println("6. Mark Task as Completed"); // Optional
+            System.out.println("5. Edit Task"); 
+            System.out.println("6. Mark Task as Completed");
             System.out.println("7. Exit");
             System.out.print("Enter your choice: ");
 
@@ -356,10 +327,10 @@ public class AstronautScheduleApp {
                     case "4":
                         viewTasksByPriority(scanner, scheduleManager);
                         break;
-                    case "5": // Optional: Edit Task
+                    case "5": 
                         editTask(scanner, scheduleManager);
                         break;
-                    case "6": // Optional: Mark Task as Completed
+                    case "6": 
                         markTaskAsCompleted(scanner, scheduleManager);
                         break;
                     case "7":
@@ -378,8 +349,8 @@ public class AstronautScheduleApp {
                 logger.log(Level.WARNING, "Invalid argument input", e);
             } catch (TaskConflictException | TaskNotFoundException e) {
                 System.err.println("Error: " + e.getMessage());
-                logger.log(Level.INFO, "Application specific error", e); // Log these at INFO as they are user-driven errors
-            } catch (Exception e) { // Catch any unexpected exceptions gracefully
+                logger.log(Level.INFO, "Application specific error", e); 
+            } catch (Exception e) { 
                 System.err.println("An unexpected error occurred: " + e.getMessage());
                 logger.log(Level.SEVERE, "An unexpected error occurred", e);
             }
@@ -466,4 +437,5 @@ public class AstronautScheduleApp {
         scheduleManager.markTaskAsCompleted(description);
         System.out.println("Task '" + description + "' marked as completed.");
     }
+
 }
